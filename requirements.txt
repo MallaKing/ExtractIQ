@@ -30,6 +30,7 @@ httpx>=0.28.0
 google-api-python-client>=2.140.0
 google-auth>=2.37.0
 google-auth-httplib2>=0.2.0
+google-auth-oauthlib
 
 pytest>=8.4.0
 pytest-asyncio>=1.1.0
