@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ExtractIQ — Intelligent Document Extraction</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c27;
+    --border: #2a2a3a;
+    --accent: #6c63ff;
+    --accent2: #a78bfa;
+    --green: #22c55e;
+    --yellow: #eab308;
+    --red: #ef4444;
+    --text: #e2e2f0;
+    --muted: #6b6b80;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; min-height: 100vh; }
+
+  /* NAV */
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 18px 40px; border-bottom: 1px solid var(--border); background: var(--surface); position: sticky; top: 0; z-index: 100; }
+  .logo { font-size: 1.3rem; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .nav-badge { background: var(--accent); color: #fff; font-size: 0.65rem; padding: 2px 8px; border-radius: 20px; font-weight: 600; letter-spacing: 0.5px; margin-left: 8px; vertical-align: middle; -webkit-text-fill-color: #fff; }
+
+  /* HERO */
+  .hero { text-align: center; padding: 80px 24px 60px; max-width: 780px; margin: 0 auto; }
+  .hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; line-height: 1.15; margin-bottom: 20px; }
+  .hero h1 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero p { color: var(--muted); font-size: 1.1rem; line-height: 1.7; max-width: 580px; margin: 0 auto 40px; }
+
+  /* PILLS */
+  .pills { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 48px; }
+  .pill { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 6px 16px; font-size: 0.8rem; color: var(--muted); }
+  .pill span { color: var(--accent2); }
+
+  /* HOW IT WORKS */
+  .section { max-width: 1100px; margin: 0 auto; padding: 60px 24px; }
+  .section-title { text-align: center; font-size: 1.6rem; font-weight: 700; margin-bottom: 12px; }
+  .section-sub { text-align: center; color: var(--muted); margin-bottom: 48px; font-size: 0.95rem; }
+
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+  .step { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; position: relative; transition: border-color .2s; }
+  .step:hover { border-color: var(--accent); }
+  .step-num { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; margin-bottom: 16px; }
+  .step h3 { font-size: 1rem; font-weight: 600; margin-bottom: 8px; }
+  .step p { color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
+  .step-arrow { position: absolute; right: -14px; top: 50%; transform: translateY(-50%); color: var(--border); font-size: 1.4rem; z-index: 1; }
+
+  /* PIPELINE SECTION */
+  .pipeline { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 40px; max-width: 1100px; margin: 0 auto 60px; }
+  .pipeline-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 28px; }
+  .pipeline-stages { display: flex; gap: 0; overflow-x: auto; padding-bottom: 8px; }
+  .stage { flex: 1; min-width: 130px; }
+  .stage-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 16px 14px; margin-right: 4px; height: 100%; }
+  .stage-box:hover { border-color: var(--accent); }
+  .stage-icon { font-size: 1.4rem; margin-bottom: 8px; }
+  .stage-name { font-size: 0.8rem; font-weight: 700; margin-bottom: 4px; color: var(--accent2); }
+  .stage-desc { font-size: 0.72rem; color: var(--muted); line-height: 1.5; }
+  .stage-arrow { display: flex; align-items: center; color: var(--border); font-size: 1.2rem; padding: 0 2px; margin-top: 30px; }
+
+  /* APP PANEL */
+  #app { max-width: 820px; margin: 0 auto; padding: 0 24px 80px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; margin-bottom: 24px; }
+  .card-title { font-size: 1rem; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+  .card-title .icon { font-size: 1.2rem; }
+
+  label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
+  input, select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 10px 14px; font-size: 0.9rem; outline: none; transition: border-color .2s; }
+  input:focus, select:focus { border-color: var(--accent); }
+  input::placeholder { color: var(--muted); }
+
+  .field { margin-bottom: 18px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 24px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; transition: all .2s; }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), #8b5cf6); color: #fff; }
+  .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(108,99,255,.4); }
+  .btn-google { background: var(--surface2); border: 1px solid var(--border); color: var(--text); }
+  .btn-google:hover { border-color: var(--accent2); }
+  .btn-sm { padding: 7px 16px; font-size: 0.8rem; }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: rgba(239,68,68,.15); border: 1px solid rgba(239,68,68,.3); color: var(--red); }
+  .btn-danger:hover { background: rgba(239,68,68,.25); border-color: var(--red); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* STATUS BADGE */
+  .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 0.75rem; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
+  .badge-green { background: rgba(34,197,94,.15); color: var(--green); }
+  .badge-yellow { background: rgba(234,179,8,.15); color: var(--yellow); }
+  .badge-red { background: rgba(239,68,68,.15); color: var(--red); }
+  .badge-purple { background: rgba(108,99,255,.15); color: var(--accent2); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* CONNECTED STATE */
+  .user-row { display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: var(--surface2); border-radius: 8px; }
+  .avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; flex-shrink: 0; }
+  .user-info { flex: 1; }
+  .user-email { font-size: 0.9rem; font-weight: 500; }
+  .user-id { font-size: 0.75rem; color: var(--muted); }
+
+  /* FOLDER LIST */
+  .folder-list { max-height: 220px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
+  .folder-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; transition: background .15s; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+  .folder-item:last-child { border-bottom: none; }
+  .folder-item:hover { background: var(--surface2); }
+  .folder-item.selected { background: rgba(108,99,255,.12); border-left: 3px solid var(--accent); }
+  .folder-name { flex: 1; }
+  .folder-id { font-size: 0.7rem; color: var(--muted); font-family: monospace; }
+
+  /* SCHEMA CARDS */
+  .schema-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; margin-bottom: 10px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+  .schema-card:last-child { margin-bottom: 0; }
+  .schema-info { flex: 1; min-width: 0; }
+  .schema-name { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+  .schema-desc { font-size: 0.8rem; color: var(--muted); margin-bottom: 8px; }
+  .schema-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+  /* SCHEMA FORM */
+  #schema-form { margin-bottom: 20px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+
+  /* TOAST */
+  #toast { position: fixed; bottom: 30px; right: 30px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 14px 20px; font-size: 0.88rem; max-width: 320px; transform: translateY(80px); opacity: 0; transition: all .3s; z-index: 999; }
+  #toast.show { transform: translateY(0); opacity: 1; }
+  #toast.success { border-color: var(--green); }
+  #toast.error { border-color: var(--red); }
+
+  /* DIVIDER */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+  /* CONFIDENCE BAR */
+  .conf-bar { height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; width: 80px; display: inline-block; vertical-align: middle; margin-left: 6px; }
+  .conf-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--accent), var(--green)); }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--surface); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) { nav { padding: 14px 20px; } .field-row { grid-template-columns: 1fr; } .pipeline-stages { flex-direction: column; } .stage-arrow { display: none; } }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div><span class="logo">ExtractIQ</span><span class="nav-badge">BETA</span></div>
+  <div id="nav-user" style="display:none">
+    <span style="font-size:0.8rem;color:var(--muted)" id="nav-email"></span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>Turn Documents into<br/><span>Structured Intelligence</span></h1>
+  <p>Drop a PDF into your Google Drive folder. ExtractIQ reads it, extracts every field you care about, validates the data, and writes clean rows into your tracking spreadsheet — automatically.</p>
+  <div class="pills">
+    <div class="pill">📄 <span>PDF · HTML · TXT</span></div>
+    <div class="pill">🧠 <span>LLM Extraction</span></div>
+    <div class="pill">✅ <span>Schema Validation</span></div>
+    <div class="pill">🔍 <span>Grounding Check</span></div>
+    <div class="pill">🚨 <span>Hallucination Detection</span></div>
+    <div class="pill">📊 <span>Google Sheets Output</span></div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="section">
+  <div class="section-title">How It Works</div>
+  <div class="section-sub">Four steps. Zero manual data entry.</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Connect Drive</h3>
+      <p>Sign in with Google and select which folder ExtractIQ should monitor.</p>
+      <div class="step-arrow">→</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>Define Schema</h3>
+      <p>Tell ExtractIQ what fields to extract — invoice number, amount, vendor, date.</p>
+      <div class="step-arrow">→</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>Drop a File</h3>
+      <p>Upload any PDF, HTML or text document into your watched folder.</p>
+      <div class="step-arrow">→</div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <h3>Get Clean Data</h3>
+      <p>A new row appears in your Google Sheet in seconds — validated, grounded, ready.</p>
+    </div>
+  </div>
+</div>
+
+<!-- PIPELINE SECTION -->
+<div class="section" style="padding-top:0">
+  <div class="pipeline">
+    <div class="pipeline-title">🔬 Reliability Pipeline — What happens to every document</div>
+    <div class="pipeline-stages">
+      <div class="stage">
+        <div class="stage-box">
+          <div class="stage-icon">📥</div>
+          <div class="stage-name">Extraction</div>
+          <div class="stage-desc">LLM reads your document and maps text to your schema fields using a compiled prompt.</div>
+        </div>
+      </div>
+      <div class="stage-arrow">→</div>
+      <div class="stage">
+        <div class="stage-box">
+          <div class="stage-icon">✅</div>
+          <div class="stage-name">Schema Validation</div>
+          <div class="stage-desc">Pydantic validates every field — correct types, required fields present, no missing data.</div>
+        </div>
+      </div>
+      <div class="stage-arrow">→</div>
+      <div class="stage">
+        <div class="stage-box">
+          <div class="stage-icon">🔍</div>
+          <div class="stage-name">Grounding</div>
+          <div class="stage-desc">Each value is traced back to the source document. Values without evidence are flagged.</div>
+        </div>
+      </div>
+      <div class="stage-arrow">→</div>
+      <div class="stage">
+        <div class="stage-box">
+          <div class="stage-icon">🚨</div>
+          <div class="stage-name">Hallucination Check</div>
+          <div class="stage-desc">Required fields with no document support are marked hallucinated — never silently accepted.</div>
+        </div>
+      </div>
+      <div class="stage-arrow">→</div>
+      <div class="stage">
+        <div class="stage-box">
+          <div class="stage-icon">🏗️</div>
+          <div class="stage-name">Structural Validation</div>
+          <div class="stage-desc">Catches empty strings, negative amounts, bad email formats, and invalid date patterns.</div>
+        </div>
+      </div>
+      <div class="stage-arrow">→</div>
+      <div class="stage">
+        <div class="stage-box">
+          <div class="stage-icon">📊</div>
+          <div class="stage-name">Confidence Score</div>
+          <div class="stage-desc">A 0–1 reliability score combining grounding quality, completeness, schema validity, and LLM consistency.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+  <!-- CARD 1: GROQ API KEY -->
+  <div class="card" id="card-groq">
+    <div class="card-title"><span class="icon">🔑</span> Your Groq API Key</div>
+    <div class="field">
+      <label>Paste your Groq API key — it's stored securely and used only for your extractions</label>
+      <input type="password" id="groq-key-input" placeholder="gsk_..." autocomplete="off" />
+    </div>
+    <button class="btn btn-primary" onclick="saveGroqKey()">Save Key</button>
+    <a href="https://console.groq.com/keys" target="_blank" style="font-size:0.78rem;color:var(--muted);margin-left:16px;">Get a free key →</a>
+  </div>
+
+  <!-- CARD 2: CONNECT GOOGLE DRIVE -->
+  <div class="card" id="card-connect">
+    <div class="card-title"><span class="icon">🔗</span> Connect Google Drive</div>
+    <div id="connect-state-disconnected">
+      <p style="color:var(--muted);font-size:0.88rem;margin-bottom:20px">Sign in with Google to let ExtractIQ monitor your Drive folders and write results to Sheets.</p>
+      <button class="btn btn-google" onclick="connectGoogle()">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Sign in with Google
+      </button>
+    </div>
+    <div id="connect-state-connected" style="display:none">
+      <div class="user-row">
+        <div class="avatar" id="avatar-letter">U</div>
+        <div class="user-info">
+          <div class="user-email" id="display-email">—</div>
+          <div class="user-id">User ID: <span id="display-uid">—</span></div>
+        </div>
+        <span class="badge badge-green"><span class="dot"></span> Connected</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 3: SCHEMA MANAGER -->
+  <div class="card" id="card-schemas" style="display:none">
+    <div class="card-title" style="justify-content:space-between">
+      <span><span class="icon">🗂️</span> Schema Manager</span>
+      <button class="btn btn-sm btn-outline" onclick="toggleSchemaForm()">+ New Schema</button>
+    </div>
+
+    <!-- Create form (hidden by default) -->
+    <div id="schema-form" style="display:none">
+      <div class="field">
+        <label>Schema Name</label>
+        <input type="text" id="sf-name" placeholder="e.g. Invoice Schema" />
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <input type="text" id="sf-desc" placeholder="What documents does this schema handle?" />
+      </div>
+      <div class="field">
+        <label>Fields (JSON)</label>
+        <textarea id="sf-fields" rows="5" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 14px;font-size:0.82rem;resize:vertical;outline:none;font-family:monospace" placeholder='{"invoice_number":{"type":"string","required":true},"amount":{"type":"float","required":true}}'></textarea>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-primary btn-sm" onclick="createSchema()">Create</button>
+        <button class="btn btn-outline btn-sm" onclick="toggleSchemaForm()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Schema list -->
+    <div id="schema-list">
+      <div class="empty-state" style="text-align:center;color:var(--muted);padding:32px;font-size:0.88rem">No schemas yet.</div>
+    </div>
+  </div>
+
+  <!-- CARD 4: FOLDER PICKER + ACTIVE WATCHES -->
+  <div class="card" id="card-folder" style="display:none">
+    <div class="card-title"><span class="icon">📁</span> Select Folder to Monitor</div>
+    <p style="color:var(--muted);font-size:0.85rem;margin-bottom:18px">
+      Name your folder with a schema suffix like <code style="color:var(--accent2);background:var(--surface2);padding:2px 6px;border-radius:4px">Invoices_sch_1</code> — the number maps to a saved schema in your account.
+    </p>
+    <div id="folder-loading" style="color:var(--muted);font-size:0.85rem;padding:16px">Loading folders…</div>
+    <div class="folder-list" id="folder-list" style="display:none"></div>
+    <div style="margin-top:16px;display:flex;gap:12px;align-items:center">
+      <button class="btn btn-primary" id="btn-watch" onclick="registerWatch()" disabled>📡 Start Monitoring</button>
+      <span id="watch-status"></span>
+    </div>
+
+    <hr class="divider" />
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <span style="font-weight:700;font-size:0.9rem">🔗 Active Watch Connections</span>
+      <button class="btn btn-sm btn-outline" onclick="loadWatches()">↻</button>
+    </div>
+    <div id="watches-list"><div style="color:var(--muted);font-size:0.85rem">No active watches.</div></div>
+  </div>
+
+  <!-- CARD 5: MANUAL EXTRACTION -->
+  <div class="card">
+    <div class="card-title"><span class="icon">🧪</span> Try Manual Extraction</div>
+    <div class="field">
+      <label>Document Text</label>
+      <textarea id="doc-text" rows="5" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 14px;font-size:0.85rem;resize:vertical;outline:none;font-family:inherit" placeholder="Invoice #INV-2024-001&#10;Customer: Acme Corp&#10;Amount: $5000&#10;Date: 2024-03-15"></textarea>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Schema (JSON)</label>
+        <textarea id="schema-text" rows="5" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 14px;font-size:0.82rem;resize:vertical;outline:none;font-family:monospace" placeholder='{"invoice_number":{"type":"string","required":true},"amount":{"type":"float","required":true}}'></textarea>
+      </div>
+      <div class="field">
+        <label>Model</label>
+        <select id="model-select">
+          <option value="llama-3.3-70b-versatile">Llama 3.3 70B</option>
+          <option value="llama-3-70b-versatile">Llama 3 70B</option>
+          <option value="qwen-2.5-72b-instruct">Qwen 2.5 72B</option>
+          <option value="gemma2-9b-it">Gemma 2 9B</option>
+          <option value="deepseek-r1-distill-llama-70b">DeepSeek R1</option>
+        </select>
+        <div style="margin-top:12px">
+          <label>Method</label>
+          <select id="method-select">
+            <option value="llm">LLM</option>
+            <option value="regex">Regex</option>
+          </select>
+        </div>
+        <div style="margin-top:16px">
+          <button class="btn btn-primary" style="width:100%" onclick="runExtraction()">⚡ Extract</button>
+        </div>
+      </div>
+    </div>
+    <div id="extract-result" style="display:none;margin-top:20px"></div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API = '';  // same origin
+let currentUser = null;
+let selectedFolder = null;
+
+// ── Init ──────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const uid = params.get('user_id');
+  const email = params.get('email');
+  const status = params.get('status');
+
+  if (uid && email && status === 'connected') {
+    setUser({ user_id: parseInt(uid), email });
+    window.history.replaceState({}, '', '/dashboard');
+  } else {
+    const saved = localStorage.getItem('extractiq_user');
+    if (saved) setUser(JSON.parse(saved));
+  }
+});
+
+function setUser(u) {
+  currentUser = u;
+  localStorage.setItem('extractiq_user', JSON.stringify(u));
+
+  document.getElementById('connect-state-disconnected').style.display = 'none';
+  document.getElementById('connect-state-connected').style.display = 'block';
+  document.getElementById('display-email').textContent = u.email;
+  document.getElementById('display-uid').textContent = u.user_id;
+  document.getElementById('avatar-letter').textContent = u.email[0].toUpperCase();
+  document.getElementById('nav-user').style.display = 'block';
+  document.getElementById('nav-email').textContent = u.email;
+
+  document.getElementById('card-schemas').style.display = 'block';
+  document.getElementById('card-folder').style.display = 'block';
+  loadFolders();
+  loadSchemas();
+  loadWatches();
+}
+
+// ── Groq Key ──────────────────────────────────────────────────────────────
+async function saveGroqKey() {
+  const key = document.getElementById('groq-key-input').value.trim();
+  if (!key.startsWith('gsk_')) { toast('Groq key should start with gsk_', 'error'); return; }
+  if (!currentUser) { toast('Connect Google first', 'error'); return; }
+  const r = await fetch(`${API}/api/v1/auth/groq-key?user_id=${currentUser.user_id}&groq_api_key=${encodeURIComponent(key)}`, { method: 'POST' });
+  if (r.ok) { toast('Groq API key saved ✓', 'success'); document.getElementById('groq-key-input').value = ''; }
+  else toast('Failed to save key', 'error');
+}
+
+// ── Google Auth ───────────────────────────────────────────────────────────
+function connectGoogle() {
+  window.location.href = `${API}/api/v1/auth/google/login`;
+}
+
+// ── Folders ───────────────────────────────────────────────────────────────
+async function loadFolders() {
+  if (!currentUser) return;
+  document.getElementById('folder-loading').style.display = 'block';
+  document.getElementById('folder-list').style.display = 'none';
+  try {
+    const r = await fetch(`${API}/api/v1/auth/folders?user_id=${currentUser.user_id}`);
+    const data = await r.json();
+    const folders = data.folders || [];
+    const list = document.getElementById('folder-list');
+    list.innerHTML = folders.length ? folders.map(f => `
+      <div class="folder-item" onclick="selectFolder('${f.id}','${f.name.replace(/'/g,"\\'")}',this)">
+        <span>📁</span>
+        <span class="folder-name">${f.name}</span>
+        <span class="folder-id">${f.id.slice(0,12)}…</span>
+      </div>`).join('') : '<div style="padding:16px;color:var(--muted);font-size:0.85rem">No folders found. Create a folder in Drive first.</div>';
+    document.getElementById('folder-loading').style.display = 'none';
+    list.style.display = 'block';
+  } catch(e) {
+    document.getElementById('folder-loading').textContent = 'Failed to load folders.';
+  }
+}
+
+function selectFolder(id, name, el) {
+  selectedFolder = { id, name };
+  document.querySelectorAll('.folder-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('btn-watch').disabled = false;
+}
+
+// ── Watch ────────────────────────────────────────────────────────────────
+async function registerWatch() {
+  if (!selectedFolder || !currentUser) return;
+  const btn = document.getElementById('btn-watch');
+  btn.disabled = true; btn.textContent = 'Registering…';
+  try {
+    const r = await fetch(
+      `${API}/api/v1/auth/watch?user_id=${currentUser.user_id}&folder_id=${selectedFolder.id}&folder_name=${encodeURIComponent(selectedFolder.name)}`,
+      { method: 'POST' }
+    );
+    const data = await r.json();
+    if (r.ok) {
+      document.getElementById('watch-status').innerHTML =
+        `<span class="badge badge-green"><span class="dot"></span> Watching: ${selectedFolder.name}</span>`;
+      toast(`Now monitoring "${selectedFolder.name}" ✓`, 'success');
+      loadWatches();
+    } else {
+      toast(data.detail || 'Watch registration failed', 'error');
+    }
+  } catch(e) { toast('Network error', 'error'); }
+  btn.disabled = false; btn.textContent = '📡 Start Monitoring';
+}
+
+// ── Schema Manager ────────────────────────────────────────────────────────
+function toggleSchemaForm() {
+  const form = document.getElementById('schema-form');
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+async function loadSchemas() {
+  if (!currentUser) return;
+  const list = document.getElementById('schema-list');
+  try {
+    const r = await fetch(`${API}/schemas/user/${currentUser.user_id}`);
+    if (!r.ok) { list.innerHTML = '<div class="empty-state" style="text-align:center;color:var(--muted);padding:32px;font-size:0.88rem">No schemas yet.</div>'; return; }
+    const schemas = await r.json();
+    if (!schemas.length) {
+      list.innerHTML = '<div class="empty-state" style="text-align:center;color:var(--muted);padding:32px;font-size:0.88rem">No schemas yet.</div>';
+      return;
+    }
+    list.innerHTML = schemas.map(s => {
+      const fieldCount = s.fields ? Object.keys(s.fields).length : 0;
+      return `
+        <div class="schema-card">
+          <div class="schema-info">
+            <div class="schema-name">${escHtml(s.name)}</div>
+            ${s.description ? `<div class="schema-desc">${escHtml(s.description)}</div>` : ''}
+            <div class="schema-meta">
+              <span class="badge badge-purple">ID: ${s.id}</span>
+              <span style="font-size:0.78rem;color:var(--muted)">Fields: ${fieldCount}</span>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-danger" onclick="deleteSchema(${s.id})">Delete</button>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML = '<div class="empty-state" style="text-align:center;color:var(--muted);padding:32px;font-size:0.88rem">No schemas yet.</div>';
+  }
+}
+
+async function createSchema() {
+  const name = document.getElementById('sf-name').value.trim();
+  const description = document.getElementById('sf-desc').value.trim();
+  const fieldsRaw = document.getElementById('sf-fields').value.trim();
+
+  if (!name) { toast('Schema name is required', 'error'); return; }
+  if (!fieldsRaw) { toast('Fields JSON is required', 'error'); return; }
+
+  let fields;
+  try { fields = JSON.parse(fieldsRaw); } catch(e) { toast('Fields must be valid JSON', 'error'); return; }
+
+  try {
+    const r = await fetch(`${API}/schemas/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, fields, description, user_id: currentUser.user_id })
+    });
+    if (r.ok) {
+      toast('Schema created ✓', 'success');
+      document.getElementById('sf-name').value = '';
+      document.getElementById('sf-desc').value = '';
+      document.getElementById('sf-fields').value = '';
+      toggleSchemaForm();
+      loadSchemas();
+    } else {
+      const data = await r.json();
+      toast(data.detail || 'Failed to create schema', 'error');
+    }
+  } catch(e) { toast('Network error', 'error'); }
+}
+
+async function deleteSchema(id) {
+  if (!currentUser) return;
+  try {
+    const r = await fetch(`${API}/schemas/${id}?user_id=${currentUser.user_id}`, { method: 'DELETE' });
+    if (r.ok) {
+      toast('Schema deleted', 'success');
+      loadSchemas();
+    } else {
+      const data = await r.json();
+      toast(data.detail || 'Failed to delete schema', 'error');
+    }
+  } catch(e) { toast('Network error', 'error'); }
+}
+
+// ── Watch Management ─────────────────────────────────────────────────────
+async function loadWatches() {
+  if (!currentUser) return;
+  const el = document.getElementById('watches-list');
+  try {
+    const r = await fetch(`${API}/api/v1/auth/watches?user_id=${currentUser.user_id}`);
+    const data = await r.json();
+    const watches = data.watches || [];
+    if (!watches.length) {
+      el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem">No active watches.</div>';
+      return;
+    }
+    el.innerHTML = watches.map(w => `
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:8px">
+        <span style="font-size:1.1rem">📡</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:0.88rem">${escHtml(w.folder_name)}</div>
+          <div style="font-size:0.72rem;color:var(--muted);font-family:monospace">${w.channel_id.slice(0,16)}…</div>
+        </div>
+        <span class="badge badge-green"><span class="dot"></span>Active</span>
+        <button class="btn btn-sm btn-danger" onclick="stopWatch('${w.channel_id}')">Stop</button>
+      </div>`).join('');
+  } catch(e) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem">Failed to load.</div>';
+  }
+}
+
+async function stopWatch(channelId) {
+  if (!currentUser) return;
+  const r = await fetch(`${API}/api/v1/auth/watches/${channelId}?user_id=${currentUser.user_id}`, { method: 'DELETE' });
+  if (r.ok) { toast('Watch stopped', 'success'); loadWatches(); }
+  else { const d = await r.json(); toast(d.detail || 'Failed to stop watch', 'error'); }
+}
+async function runExtraction() {
+  const doc = document.getElementById('doc-text').value.trim();
+  const schemaRaw = document.getElementById('schema-text').value.trim();
+  if (!doc || !schemaRaw) { toast('Fill in document and schema', 'error'); return; }
+  let schema;
+  try { schema = JSON.parse(schemaRaw); } catch(e) { toast('Invalid JSON schema', 'error'); return; }
+
+  const resultEl = document.getElementById('extract-result');
+  resultEl.style.display = 'block';
+  resultEl.innerHTML = '<div style="color:var(--muted);font-size:0.85rem">Extracting…</div>';
+
+  try {
+    const r = await fetch(`${API}/extract/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        document_content: doc,
+        schema,
+        model: document.getElementById('model-select').value,
+        method: document.getElementById('method-select').value,
+      })
+    });
+    const data = await r.json();
+    renderResult(data, resultEl);
+  } catch(e) { resultEl.innerHTML = `<div style="color:var(--red)">Error: ${e.message}</div>`; }
+}
+
+function renderResult(d, el) {
+  const conf = d.confidence != null ? d.confidence * 100 : null;
+  const gs = d.grounding_score != null ? d.grounding_score * 100 : null;
+  const isClean = d.hallucination?.is_clean;
+
+  el.innerHTML = `
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+      ${d.success ? '<span class="badge badge-green"><span class="dot"></span>Success</span>' : '<span class="badge badge-red"><span class="dot"></span>Failed</span>'}
+      ${conf != null ? `<span class="badge badge-purple">Confidence: ${conf.toFixed(0)}%</span>` : ''}
+      ${gs != null ? `<span class="badge badge-purple">Grounding: ${gs.toFixed(0)}%</span>` : ''}
+      ${isClean === true ? '<span class="badge badge-green">✓ No Hallucinations</span>' : isClean === false ? '<span class="badge badge-red">⚠ Hallucinations Detected</span>' : ''}
+      ${d.schema_valid ? '<span class="badge badge-green">✓ Schema Valid</span>' : '<span class="badge badge-red">Schema Invalid</span>'}
+    </div>
+    ${d.error ? `<div style="color:var(--red);font-size:0.82rem;margin-bottom:12px">Error: ${d.error}</div>` : ''}
+    ${d.data ? `<pre style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;font-size:0.8rem;overflow-x:auto;color:var(--text)">${JSON.stringify(d.data, null, 2)}</pre>` : ''}
+    ${d.grounding ? `<details style="margin-top:12px"><summary style="cursor:pointer;font-size:0.82rem;color:var(--muted)">Grounding Details</summary>
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">${Object.entries(d.grounding).map(([k,v])=>`<span class="badge ${v==='grounded'?'badge-green':v==='partial'?'badge-yellow':'badge-red'}">${k}: ${v}</span>`).join('')}</div>
+    </details>` : ''}
+    ${d.structural_issues?.length ? `<div style="margin-top:10px;font-size:0.82rem;color:var(--yellow)">⚠ Structural issues: ${d.structural_issues.map(i=>i.field+' ('+i.check+')').join(', ')}</div>` : ''}
+  `;
+}
+
+// ── Manual Extract ───────────────────────────────────────────────────────
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Toast ────────────────────────────────────────────────────────────────
+function toast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `show ${type}`;
+  setTimeout(() => t.className = '', 3000);
+}
+</script>
+</body>
+</html>
+

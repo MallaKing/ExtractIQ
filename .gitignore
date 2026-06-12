@@ -1,0 +1,116 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Google credentials — never commit these
+client_secret_*.json
+*service_account*.json
+mygenagent-*.json
+
+# Internal project docs — not needed on Render
+PHASE_A_SUMMARY.md
+COMPLETION_REPORT.md
+PRISMEXTRACTIQ.md
+QUICK_START.md
+DEVELOPMENT.md
+ARCHITECTURE.md
+INDEX.md
+API.md
+API_REFERENCE.md
+app/api/serviceaccount.txt
+
+# Test files
+test_*.py
+pytest.ini
+
+# Start watch utility (local dev only)
+start_watch.py
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Celery
+celerybeat-schedule
+dump.rdb
+
+# Docker
+.dockerignore
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE specific
+*.iml
+.gradle/
+.idea/
+out/
+
+# Node (if frontend)
+node_modules/
+npm-debug.log
+
+# Data
+data/
+*.csv
+*.xlsx
+
+# Documents
+docs/_build/

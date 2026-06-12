@@ -1,0 +1,68 @@
+services:
+  - type: web
+    name: extractiq-engine
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && pip install supervisor
+    startCommand: supervisord -c supervisord.conf
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+
+      # --- Managed infrastructure (auto-injected by Render) ---
+      - key: DATABASE_URL
+        fromDatabase:
+          name: extractiq-postgres-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: extractiq-redis
+          type: redis
+          property: connectionString
+      - key: CELERY_BROKER_URL
+        fromService:
+          name: extractiq-redis
+          type: redis
+          property: connectionString
+      - key: CELERY_RESULT_BACKEND
+        fromService:
+          name: extractiq-redis
+          type: redis
+          property: connectionString
+
+      # --- Secrets: set these in the Render dashboard ---
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GOOGLE_OAUTH_CLIENT_ID
+        sync: false
+      - key: GOOGLE_OAUTH_CLIENT_SECRET
+        sync: false
+      # Set this to your Render service URL after first deploy
+      # e.g. https://extractiq-engine.onrender.com
+      - key: NGROK_DOMAIN
+        sync: false
+      - key: GOOGLE_DRIVE_WEBHOOK_TOKEN
+        value: extractiq-webhook-secret
+
+      # --- App config ---
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: JOB_RETENTION_HOURS
+        value: "24"
+
+# Managed Redis
+  - type: redis
+    name: extractiq-redis
+    plan: free
+    maxmemoryPolicy: allkeys-lru
+
+# Managed PostgreSQL
+databases:
+  - name: extractiq-postgres-db
+    plan: free
+    databaseName: extractiq_prod
+    user: extractiq_admin
