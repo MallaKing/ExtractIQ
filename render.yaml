@@ -1,5 +1,5 @@
 services:
-  # The Core Multi-Tenant Web + Worker Engine
+  # 1. The Core Multi-Tenant Web + Worker Engine
   - type: web
     name: extractiq-engine
     env: python
@@ -16,19 +16,22 @@ services:
           name: extractiq-postgres-db
           property: connectionString
           
-      # Updated Redis environment mappings for Render Key-Value structure
+      # Connect directly to the managed Redis component below
       - key: REDIS_URL
-        fromParam:
-          service: extractiq-redis
-          value: connectionString
+        fromService:
+          name: extractiq-redis
+          type: redis
+          property: connectionString
       - key: CELERY_BROKER_URL
-        fromParam:
-          service: extractiq-redis
-          value: connectionString
+        fromService:
+          name: extractiq-redis
+          type: redis
+          property: connectionString
       - key: CELERY_RESULT_BACKEND
-        fromParam:
-          service: extractiq-redis
-          value: connectionString
+        fromService:
+          name: extractiq-redis
+          type: redis
+          property: connectionString
 
       # --- Secrets: set these in the Render dashboard ---
       - key: GROQ_API_KEY
@@ -52,10 +55,12 @@ services:
       - key: JOB_RETENTION_HOURS
         value: "24"
 
-# --- Managed Redis (Moved out of services block to fix the firewall issue) ---
-kvStores:
-  - name: extractiq-redis
+  # 2. Managed Redis Component (Fixed Spec & Firewall)
+  - type: redis
+    name: extractiq-redis
     plan: free
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: [] # ◄ THIS FIXES THE FIREWALL ERROR NATIVELY ON FREE TIER
 
 # --- Managed PostgreSQL ---
 databases:
