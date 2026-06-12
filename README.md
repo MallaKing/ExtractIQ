@@ -146,38 +146,6 @@ You can monitor multiple folders simultaneously — each gets its own watch conn
 
 ---
 
-## Deploying to Render
-
-### One-click deploy
-
-1. Push this repo to GitHub
-2. Go to [render.com](https://render.com) → New → Blueprint → connect your repo
-3. Render reads `render.yaml` and provisions the web service, Redis, and Postgres automatically
-
-### Set environment variables
-
-After the service is created, go to the Render dashboard and set these secrets:
-
-| Variable | Value |
-|---|---|
-| `GROQ_API_KEY` | Your platform Groq key (fallback for users without BYOK) |
-| `GOOGLE_OAUTH_CLIENT_ID` | From Google Cloud Console |
-| `GOOGLE_OAUTH_CLIENT_SECRET` | From Google Cloud Console |
-| `NGROK_DOMAIN` | Your Render URL, e.g. `https://extractiq-engine.onrender.com` |
-
-### Add your Render URL to Google Cloud Console
-
-Go to [Google Cloud Console](https://console.cloud.google.com) → APIs & Services → Credentials → your OAuth client → **Authorized redirect URIs** → add:
-
-```
-https://your-render-url.onrender.com/api/v1/auth/google/callback
-```
-
-### That's it
-
-First startup runs database migrations automatically. No manual SQL required.
-
-> **Note on the free tier:** Render free web services sleep after 15 minutes of inactivity. Google webhook notifications can't reach a sleeping service. For always-on reliability, upgrade to Render Starter ($7/month).
 
 ---
 
